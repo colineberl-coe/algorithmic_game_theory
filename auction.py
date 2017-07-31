@@ -14,9 +14,11 @@ class Auction(object):
 
         Args:
             auction_type (str): type of auction; i.e. how winner is resolved
-            reserve_price (float): the minimum price for good allocation in the auction
+            reserve_price (float): the minimum price for good allocation
             **kwargs: arbitrary keyword arguments
 
+        Methods:
+            _set_attributes: parse kwargs into class attributes
         """
         self._auction_type = auction_type
         self._reserve_price = 0.0 if reserve_price is None else reserve_price
@@ -52,8 +54,7 @@ class Auction(object):
         stores the bid value at the winning index in self._p
         """
         self._index_highest_bid = np.argmax(self._b)
-        self._index_second_highest_bid = np.argpartition(self._b,
-                                                         -2)[-2]
+        self._index_second_highest_bid = np.argpartition(self._b, -2)[-2]
         # Put a 1 in the index of the winning agent
         np.put(a=self._x, ind=self._index_highest_bid, v=1)
         if self._auction_type == 'first_price':
