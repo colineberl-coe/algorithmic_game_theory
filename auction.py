@@ -15,6 +15,10 @@ class Auction(object):
         Args:
             auction_type (str): type of auction; i.e. how winner is resolved
             reserve_price (float): the minimum price for good allocation
+            bidders (iterable): the agents in the auction
+            bids (iterable): the bids of the agents in the auction
+            bids_and_bidders (dict): mapping of bidder -> bid. If not specified,
+                bidders and bids will be zipped and passed to dict() constructor
             **kwargs: arbitrary keyword arguments
 
         Methods:
@@ -26,8 +30,10 @@ class Auction(object):
         self._b = () if bids is None else tuple(bids)
         self._x = np.zeros_like(bids)  # allocation vector
         self._p = np.zeros_like(bids)  # payment vector
-        self._bids_and_bidders = {} if (bids is None and bidders is None) else \
-            dict(zip(bidders, bids))  # mapping of agents -> valuations
+        self._any_nonzero_bids = self._b.count(0) < len(self._b)
+        self.bids_and_bidders = bids_and_bidders if bids_and_bidders is not \
+            None else dict(zip(bidders, bids))  # map of agents -> valuations
+        self._resolved = False
         self._set_attributes(kwargs)
 
     def _set_attributes(self, kwargs):
@@ -53,6 +59,14 @@ class Auction(object):
         """Stores the index of the top two bids in self._b,
         stores the bid value at the winning index in self._p
         """
+        # auction only resolves once
+        if self._resolved:
+            pass
+
+        if not self._any_nonzero_bids:
+            print "This auction has no non-zero bids. There is no winner"
+            self._resolved = True
+            return
         self._index_highest_bid = np.argmax(self._b)
         self._index_second_highest_bid = np.argpartition(self._b, -2)[-2]
         # Put a 1 in the index of the winning agent
@@ -63,4 +77,5 @@ class Auction(object):
         elif self._auction_type == 'second_price':
             # Modify this for special rules e.g. SP + $0.01
             np.put(a=self._p, ind=self._index_highest_bid,
-                   v=self._b[self._index_second_highest_bid])
+                   v=self._b[self._index_second_highest_bid] + 0.01)
+        self._resolved = True
