@@ -37,6 +37,14 @@ class Auction(object):
         self._set_attributes(kwargs)
 
     def _set_attributes(self, kwargs):
+        """Attach passed keyword-arguments to class namespace
+
+        Args:
+            kwargs (dict): key-word arguments passed to __init__
+
+        Returns:
+            (None): updates instance namespace
+        """
         for k, v in kwargs.iteritems():
             setattr(self, k, v)
 
